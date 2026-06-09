@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compliance Search · IT Security</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f8f8f7;
+      --surface:   #ffffff;
+      --border:    #e5e5e3;
+      --border-md: #d1d1ce;
+      --text:      #1a1a18;
+      --muted:     #6b6b68;
+      --hint:      #9b9b98;
+      --blue-bg:   #eff6ff;
+      --blue-text: #1d4ed8;
+      --blue-bdr:  #bfdbfe;
+      --red-bg:    #fef2f2;
+      --red-text:  #b91c1c;
+      --red-bdr:   #fecaca;
+      --green-bg:  #f0fdf4;
+      --green-text:#15803d;
+      --amber-bg:  #fffbeb;
+      --amber-text:#92400e;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --sans: 'Inter', system-ui, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #111110;
+        --surface:   #1c1c1a;
+        --border:    #2e2e2c;
+        --border-md: #3e3e3b;
+        --text:      #f0f0ee;
+        --muted:     #9b9b98;
+        --hint:      #6b6b68;
+        --blue-bg:   #1e2a42;
+        --blue-text: #93c5fd;
+        --blue-bdr:  #1e40af;
+        --red-bg:    #2a1515;
+        --red-text:  #fca5a5;
+        --red-bdr:   #7f1d1d;
+        --green-bg:  #14271a;
+        --green-text:#86efac;
+        --amber-bg:  #271f0e;
+        --amber-text:#fcd34d;
+      }
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; }
+
+    /* ── Layout ── */
+    .shell { display: grid; grid-template-rows: 52px 1fr; min-height: 100vh; }
+
+    .topbar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 24px; border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .topbar-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--red-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .topbar-icon i { font-size: 14px; color: var(--red-text); }
+    .topbar h1 { font-size: 14px; font-weight: 600; }
+    .topbar-sub { font-size: 12px; color: var(--muted); margin-left: 4px; }
+    .topbar-spacer { flex: 1; }
+    .badge { font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; }
+    .badge-blue { background: var(--blue-bg); color: var(--blue-text); border: 1px solid var(--blue-bdr); }
+
+    .main { display: grid; grid-template-columns: 380px 1fr; gap: 0; overflow: hidden; }
+
+    /* ── Left panel ── */
+    .panel-left {
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto; background: var(--surface);
+    }
+    .panel-section { padding: 20px; border-bottom: 1px solid var(--border); }
+    .panel-section:last-child { border-bottom: none; flex: 1; }
+
+    .section-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 12px; }
+
+    /* Scope segmented control */
+    .seg { display: flex; border: 1px solid var(--border-md); border-radius: var(--radius-sm); overflow: hidden; }
+    .seg button { flex: 1; padding: 6px 4px; font-size: 11px; font-weight: 500; font-family: var(--sans); background: transparent; border: none; color: var(--muted); cursor: pointer; transition: background .1s, color .1s; white-space: nowrap; }
+    .seg button:not(:last-child) { border-right: 1px solid var(--border-md); }
+    .seg button.on { background: var(--blue-bg); color: var(--blue-text); }
+    .seg button:hover:not(.on) { background: var(--bg); color: var(--text); }
+
+    /* Form fields */
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; margin-bottom: 5px; }
+    .field input, .field textarea, .field select {
+      width: 100%; padding: 8px 10px; font-size: 13px; font-family: var(--sans);
+      background: var(--bg); border: 1px solid var(--border-md);
+      border-radius: var(--radius-sm); color: var(--text);
+      transition: border-color .12s;
+    }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--blue-text); }
+    .field textarea { resize: vertical; line-height: 1.5; }
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .divider-label { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+    .divider-label span { font-size: 11px; color: var(--hint); white-space: nowrap; }
+    .divider-label::before, .divider-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .btn-primary {
+      width: 100%; padding: 10px; font-size: 13px; font-weight: 600; font-family: var(--sans);
+      background: var(--text); color: var(--surface); border: none;
+      border-radius: var(--radius-md); cursor: pointer; transition: opacity .12s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Saved list ── */
+    .saved-empty { font-size: 13px; color: var(--hint); padding: 8px 0; }
+    .saved-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid var(--border); cursor: pointer;
+    }
+    .saved-item:last-child { border-bottom: none; }
+    .saved-item:hover .saved-intent { color: var(--blue-text); }
+    .saved-intent { font-size: 13px; font-weight: 500; line-height: 1.4; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .saved-meta { font-size: 11px; color: var(--hint); white-space: nowrap; flex-shrink: 0; }
+    .saved-del { background: none; border: none; color: var(--hint); cursor: pointer; padding: 2px; border-radius: 4px; flex-shrink: 0; font-size: 14px; }
+    .saved-del:hover { color: var(--red-text); }
+
+    /* ── Right panel ── */
+    .panel-right { overflow-y: auto; padding: 24px; }
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--hint); }
+    .empty-state i { font-size: 40px; }
+    .empty-state p { font-size: 13px; text-align: center; max-width: 260px; line-height: 1.6; }
+
+    .result-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px;
+    }
+    .result-card:last-child { margin-bottom: 0; }
+    .card-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+    .intent-text { font-size: 14px; font-weight: 500; line-height: 1.5; }
+    .type-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .type-chip { font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; background: var(--blue-bg); color: var(--blue-text); border: 1px solid var(--blue-bdr); }
+
+    /* KQL block */
+    .kql-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .kql-block {
+      background: var(--bg); border: 1px solid var(--border-md);
+      border-radius: var(--radius-sm); padding: 14px 16px;
+      font-family: var(--mono); font-size: 13px; color: var(--text);
+      white-space: pre-wrap; word-break: break-all; line-height: 1.7;
+    }
+    .btn-sm {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; font-size: 12px; font-weight: 500; font-family: var(--sans);
+      background: var(--surface); border: 1px solid var(--border-md);
+      border-radius: var(--radius-sm); color: var(--text); cursor: pointer; transition: background .1s;
+    }
+    .btn-sm:hover { background: var(--bg); }
+
+    /* Locations */
+    .loc-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .loc-chip { font-size: 12px; padding: 3px 10px; border-radius: 20px; font-weight: 500; font-family: var(--mono); display: inline-flex; align-items: center; gap: 5px; }
+    .loc-mailbox { background: var(--blue-bg); color: var(--blue-text); }
+    .loc-site    { background: var(--green-bg); color: var(--green-text); }
+    .loc-team    { background: var(--amber-bg); color: var(--amber-text); }
+    .loc-all     { background: var(--bg); color: var(--muted); border: 1px solid var(--border-md); }
+
+    /* Steps */
+    .steps { counter-reset: steps; }
+    .step { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .step:last-child { border-bottom: none; }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border-md); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
+    .step-text { font-size: 13px; line-height: 1.5; }
+
+    /* Notes */
+    .notes-box { background: var(--amber-bg); border: 1px solid #fde68a; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--amber-text); line-height: 1.5; display: flex; gap: 8px; align-items: flex-start; }
+
+    /* Action row */
+    .action-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 20px; }
+    .btn-purview {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px;
+      font-size: 13px; font-weight: 600; font-family: var(--sans);
+      background: var(--blue-text); color: white; border: none;
+      border-radius: var(--radius-md); cursor: pointer; text-decoration: none;
+      transition: opacity .12s;
+    }
+    .btn-purview:hover { opacity: .85; }
+    .btn-save {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; font-size: 13px; font-weight: 500; font-family: var(--sans);
+      background: var(--surface); border: 1px solid var(--border-md);
+      border-radius: var(--radius-md); color: var(--text); cursor: pointer; transition: background .1s;
+    }
+    .btn-save:hover { background: var(--bg); }
+    .saved-ok { font-size: 12px; color: var(--green-text); display: none; align-items: center; gap: 4px; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 60px 0; }
+    .loading p { font-size: 13px; color: var(--muted); }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border-md); border-top-color: var(--text); border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error */
+    .error-box { background: var(--red-bg); border: 1px solid var(--red-bdr); border-radius: var(--radius-md); padding: 14px 16px; font-size: 13px; color: var(--red-text); display: flex; gap: 10px; align-items: flex-start; }
+
+    /* Responsive */
+    @media (max-width: 780px) {
+      .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .panel-left { border-right: none; border-bottom: 1px solid var(--border); overflow-y: visible; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-icon"><i class="ti ti-shield-search"></i></div>
+    <h1>Compliance Search</h1>
+    <span class="topbar-sub">Microsoft Purview · eDiscovery · KQL builder</span>
+    <div class="topbar-spacer"></div>
+    <span class="badge badge-blue">IT Security</span>
+  </header>
+
+  <div class="main">
+
+    <!-- ── Left: query builder ── -->
+    <aside class="panel-left">
+
+      <div class="panel-section">
+        <div class="section-label">Content scope</div>
+        <div class="seg" id="seg">
+          <button class="on" onclick="setScope(this,'All')">All</button>
+          <button onclick="setScope(this,'Email')"><i class="ti ti-mail"></i> Email</button>
+          <button onclick="setScope(this,'Teams')"><i class="ti ti-message"></i> Teams</button>
+          <button onclick="setScope(this,'SharePoint')"><i class="ti ti-files"></i> SP</button>
+          <button onclick="setScope(this,'OneDrive')"><i class="ti ti-cloud"></i> OD</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-label">Guided fields</div>
+        <div class="field">
+          <label for="f-user">User / mailbox</label>
+          <input id="f-user" type="text" placeholder="john.doe@contoso.com">
+        </div>
+        <div class="field">
+          <label>Date range</label>
+          <div class="date-row">
+            <input id="f-from" type="date">
+            <input id="f-to" type="date">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-keys">Keywords / subject</label>
+          <input id="f-keys" type="text" placeholder="wire transfer, invoice…">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="divider-label"><span>or describe in plain English</span></div>
+        <div class="field">
+          <label for="f-nl">Natural language query</label>
+          <textarea id="f-nl" rows="3" placeholder="e.g. find all emails sent to john@contoso.com about wire transfers in the last 30 days"></textarea>
+        </div>
+        <button class="btn-primary" id="genbtn" onclick="generate()">
+          <i class="ti ti-wand"></i> Generate KQL
+        </button>
+      </div>
+
+      <!-- Saved searches -->
+      <div class="panel-section">
+        <div class="section-label">Saved searches</div>
+        <div id="saved-list">
+          <p class="saved-empty">No saved searches yet.</p>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── Right: output ── -->
+    <main class="panel-right" id="panel-right">
+      <div class="empty-state" id="empty-state">
+        <i class="ti ti-search"></i>
+        <p>Fill in the query builder or describe what you're looking for in plain English, then click Generate KQL.</p>
+      </div>
+      <div id="loading" style="display:none;" class="loading">
+        <div class="spinner"></div>
+        <p>Building KQL query…</p>
+      </div>
+      <div id="error-area" style="display:none;"></div>
+      <div id="results" style="display:none;"></div>
+    </main>
+
+  </div>
+</div>
+
+<script>
+  /* ── Config ──────────────────────────────────────────────────────────────────
+   * Point RAILWAY_URL to your deployed service.
+   * Leave blank to call the Anthropic API directly (uses same origin in prod,
+   * or set window.ANTHROPIC_KEY for standalone dev use).
+   * ────────────────────────────────────────────────────────────────────────── */
+  const CONFIG = {
+    RAILWAY_URL: '',          // e.g. 'https://your-app.railway.app'
+    API_SECRET:  '',          // your API_SECRET_KEY from .env
+  };
+
+  let currentScope = 'All';
+  let currentPlan  = null;
+
+  function setScope(el, val) {
+    currentScope = val;
+    document.querySelectorAll('.seg button').forEach(b => b.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  function buildPrompt() {
+    const nl   = document.getElementById('f-nl').value.trim();
+    const user = document.getElementById('f-user').value.trim();
+    const from = document.getElementById('f-from').value;
+    const to   = document.getElementById('f-to').value;
+    const keys = document.getElementById('f-keys').value.trim();
+    if (nl) return { query: nl };
+    if (!user && !from && !to && !keys && currentScope === 'All') return null;
+    return { query: null, scope: currentScope, user, dateFrom: from, dateTo: to, keywords: keys };
+  }
+
+  async function callRailway(payload) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (CONFIG.API_SECRET) headers['Authorization'] = `Bearer ${CONFIG.API_SECRET}`;
+    const base = CONFIG.RAILWAY_URL || window.location.origin;
+    const res  = await fetch(`${base}/compliance`, { method: 'POST', headers, body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Server error');
+    return data.plan;
+  }
+
+  async function generate() {
+    const payload = buildPrompt();
+    if (!payload) { alert('Fill in at least one field or enter a plain-English query.'); return; }
+
+    document.getElementById('empty-state').style.display  = 'none';
+    document.getElementById('results').style.display      = 'none';
+    document.getElementById('error-area').style.display   = 'none';
+    document.getElementById('loading').style.display      = 'block';
+    document.getElementById('genbtn').disabled = true;
+
+    try {
+      const plan = await callRailway(payload);
+      currentPlan = { ...plan, _payload: payload, _ts: Date.now() };
+      renderResults(plan);
+    } catch (e) {
+      document.getElementById('error-area').innerHTML = `
+        <div class="error-box"><i class="ti ti-alert-circle" style="font-size:16px;flex-shrink:0;margin-top:1px;"></i><span>${esc(e.message)}</span></div>`;
+      document.getElementById('error-area').style.display = 'block';
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('genbtn').disabled = false;
+  }
+
+  function renderResults(plan) {
+    const locs = renderLocs(plan.locations);
+    const steps = (plan.purview_steps || []).map((s, i) =>
+      `<div class="step"><span class="step-num">${i + 1}</span><span class="step-text">${esc(s)}</span></div>`
+    ).join('');
+
+    const notes = plan.notes ? `
+      <div class="result-card">
+        <div class="card-label">Notes</div>
+        <div class="notes-box"><i class="ti ti-info-circle" style="font-size:15px;flex-shrink:0;margin-top:1px;"></i><span>${esc(plan.notes)}</span></div>
+      </div>` : '';
+
+    document.getElementById('results').innerHTML = `
+      <div class="result-card">
+        <div class="card-label">Search intent</div>
+        <div class="intent-text">${esc(plan.intent || '')}</div>
+        <div class="type-chips">${(plan.content_types || []).map(t => `<span class="type-chip">${esc(t)}</span>`).join('')}</div>
+      </div>
+
+      <div class="result-card">
+        <div class="kql-header">
+          <div class="card-label" style="margin:0;">KQL query</div>
+          <button class="btn-sm" onclick="cpKQL()"><i class="ti ti-copy" style="font-size:13px;"></i> Copy KQL</button>
+        </div>
+        <div class="kql-block" id="kql-out">${esc(plan.kql || '')}</div>
+      </div>
+
+      <div class="result-card">
+        <div class="card-label">Content locations to add in Purview</div>
+        <div class="loc-chips">${locs}</div>
+      </div>
+
+      <div class="result-card">
+        <div class="card-label">Steps in Purview</div>
+        <div class="steps">${steps}</div>
+      </div>
+
+      ${notes}
+
+      <div class="action-row">
+        <a class="btn-purview" href="https://compliance.microsoft.com/contentsearch" target="_blank" rel="noopener">
+          <i class="ti ti-external-link" style="font-size:15px;"></i> Open Purview Compliance Center
+        </a>
+        <button class="btn-save" onclick="saveSearch()">
+          <i class="ti ti-bookmark" style="font-size:14px;"></i> Save search
+        </button>
+        <span class="saved-ok" id="saved-ok"><i class="ti ti-check" style="font-size:13px;"></i> Saved</span>
+      </div>
+    `;
+
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('saved-ok').style.display = 'none';
+  }
+
+  function renderLocs(locs) {
+    if (!locs) return '<span class="loc-chip loc-all"><i class="ti ti-users" style="font-size:11px;"></i>All locations</span>';
+    let html = '';
+    if (locs.all_mailboxes || (!locs.mailboxes?.length && !locs.sites?.length && !locs.teams?.length)) {
+      html += '<span class="loc-chip loc-all"><i class="ti ti-users" style="font-size:11px;"></i>All mailboxes</span>';
+    } else {
+      (locs.mailboxes || []).forEach(m => html += `<span class="loc-chip loc-mailbox"><i class="ti ti-mail" style="font-size:11px;"></i>${esc(m)}</span>`);
+    }
+    if (locs.all_sites) html += '<span class="loc-chip loc-all"><i class="ti ti-world" style="font-size:11px;"></i>All sites</span>';
+    else (locs.sites || []).forEach(s => html += `<span class="loc-chip loc-site"><i class="ti ti-files" style="font-size:11px;"></i>${esc(s)}</span>`);
+    (locs.teams || []).forEach(t => html += `<span class="loc-chip loc-team"><i class="ti ti-message" style="font-size:11px;"></i>${esc(t)}</span>`);
+    return html || '<span class="loc-chip loc-all">All locations</span>';
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function cpKQL() {
+    const kql = document.getElementById('kql-out')?.textContent || '';
+    navigator.clipboard.writeText(kql).then(() => {
+      const btn = event.currentTarget;
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<i class="ti ti-check" style="font-size:13px;"></i> Copied';
+      setTimeout(() => btn.innerHTML = orig, 1800);
+    }).catch(() => {});
+  }
+
+  /* ── Saved searches (localStorage) ─────────────────────────────────────── */
+  const LS_KEY = 'compliance-searches-v1';
+
+  function loadSaved() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function persistSaved(arr) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(arr)); } catch {}
+  }
+
+  function saveSearch() {
+    if (!currentPlan) return;
+    const saved = loadSaved();
+    saved.unshift({ id: Date.now(), intent: currentPlan.intent, kql: currentPlan.kql, plan: currentPlan, ts: currentPlan._ts });
+    if (saved.length > 30) saved.length = 30;
+    persistSaved(saved);
+    renderSaved();
+    const ok = document.getElementById('saved-ok');
+    if (ok) { ok.style.display = 'inline-flex'; setTimeout(() => ok.style.display = 'none', 2200); }
+  }
+
+  function deleteSearch(id) {
+    const saved = loadSaved().filter(s => s.id !== id);
+    persistSaved(saved);
+    renderSaved();
+  }
+
+  function loadSearch(item) {
+    currentPlan = item.plan;
+    renderResults(item.plan);
+    document.getElementById('empty-state').style.display = 'none';
+  }
+
+  function renderSaved() {
+    const saved = loadSaved();
+    const el = document.getElementById('saved-list');
+    if (!saved.length) { el.innerHTML = '<p class="saved-empty">No saved searches yet.</p>'; return; }
+    el.innerHTML = saved.map(s => {
+      const d = new Date(s.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `<div class="saved-item" onclick="loadSearch(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+        <span class="saved-intent">${esc(s.intent)}</span>
+        <span class="saved-meta">${d}</span>
+        <button class="saved-del" onclick="event.stopPropagation();deleteSearch(${s.id})" title="Delete" aria-label="Delete">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  renderSaved();
+</script>
+</body>
+</html>
